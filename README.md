@@ -2,9 +2,10 @@
 Simple picture viewer 
 
 I used AcDsee in the old days, just a simple picture viewer without any bells or whistles.
-Today it has become a very large program which is slow with large folders because of the indexing of images.
-So I wrote my own program like I remembered from that time.
 
+Today it has become a very large program which is slow with large folders because of the indexing of images.
+
+So I wrote my own program like I remembered from that time.
 
 - Choose a folder to see all images in the folder (now jpg/bmp/tiff, can be easily expanded).
 - Double click a folder to enter this folder.
