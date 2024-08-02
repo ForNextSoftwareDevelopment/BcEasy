@@ -1,0 +1,2 @@
+# BcEasy
+Simple picture viewer 
