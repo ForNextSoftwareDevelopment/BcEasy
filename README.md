@@ -15,3 +15,4 @@ So I wrote my own program like I remembered from that time.
 - Use the right button again to go to the maximized view and the you can also go to the next/previous image.
 
 Still working on it to adjust to my liking, but feel free to adjust it to yours ;-)
+![Screenshot](ScreenShot.png)
