@@ -142,6 +142,8 @@
             this.MinimumSize = new System.Drawing.Size(520, 600);
             this.Name = "MainForm";
             this.Text = "BcEasy";
+            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MainForm_KeyPress);
             this.splitContainerVertical.Panel1.ResumeLayout(false);
             this.splitContainerVertical.Panel2.ResumeLayout(false);

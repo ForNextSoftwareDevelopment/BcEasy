@@ -15,6 +15,15 @@ namespace BcEasy
         // Current folder
         private string currentfolder;
 
+        // Current file
+        private string file;
+
+        // Cached file
+        private string fileCached;
+
+        // File to display on start (doubleclicked, open width...)
+        private string startFile;
+
         // All folders in current folder 
         private List<string> folders;
 
@@ -27,6 +36,9 @@ namespace BcEasy
         // Image for full screen
         private Image image;
 
+        // Cached Image for full screen
+        private Image imageCached;
+
         // Image panning
         private bool panning = false;
         private Point startingPoint = Point.Empty;
@@ -35,6 +47,9 @@ namespace BcEasy
 
         // Zoom factor
         private float zoom = 1.0f;
+
+        // Program started with argument
+        private bool argument = false;
 
         #endregion
 
@@ -46,13 +61,44 @@ namespace BcEasy
         public MainForm()
         {
             InitializeComponent();
-            currentfolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-            FillFolders(currentfolder);
         }
 
         #endregion
 
         #region EventHandlers
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 1)
+            {
+                argument = true;
+
+                string[] temp = args[1].Split('\\');
+                string folder = "";
+                for (int i = 0; i < temp.Length - 1; i++)
+                {
+                    folder += temp[i] + "\\";
+                }
+                
+                startFile = temp[temp.Length - 1];
+
+                currentfolder = folder;
+                FillFolders(currentfolder);
+            } else
+            {
+                currentfolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+                FillFolders(currentfolder);
+            }
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            if (argument)
+            {
+                ShowFullSize(startFile);
+            }
+        }
 
         private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -80,16 +126,16 @@ namespace BcEasy
         {
             pbPreview.Image = Resources.noimage;
 
-            string selected = lbFolders.SelectedItem.ToString();
-            if (selected == "..")
+            file = lbFolders.SelectedItem.ToString();
+            if (file == "..")
             {
                 FillFiles(currentfolder + "\\");
-            } else if (selected.Contains(":"))
+            } else if (file.Contains(":"))
             {
-                FillFiles(selected + "\\");
+                FillFiles(file + "\\");
             } else
             {
-                FillFiles(currentfolder + "\\" + selected);
+                FillFiles(currentfolder + "\\" + file);
             }
         }
 
@@ -176,7 +222,7 @@ namespace BcEasy
         {
             if ((e.KeyCode == Keys.Enter) && (lbFiles.SelectedItem != null))
             {
-                string file = lbFiles.SelectedItem.ToString();
+                file = lbFiles.SelectedItem.ToString();
                 ShowFullSize(file);
             }
         }
@@ -188,7 +234,7 @@ namespace BcEasy
         /// <param name="e"></param>
         private void lbFiles_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            string file = lbFiles.SelectedItem.ToString();
+            file = lbFiles.SelectedItem.ToString();
             ShowFullSize(file);
         }
 
@@ -440,12 +486,56 @@ namespace BcEasy
 
                         try
                         {
-                            image = Image.FromFile(path + file);
+                            if (file == fileCached)
+                            {
+                                image = imageCached;
+                            } else
+                            {
+                                image = Image.FromFile(path + file);
+                            }
+
                             pictureBox.Image = image;
                             pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
                         } catch (Exception ex)
                         {
                             pictureBox.Image = Resources.noimage;
+                        }
+
+                        try
+                        {
+                            if (e.Delta > 0)
+                            {
+                                for (int i = 0; i < files.Count; i++)
+                                {
+                                    if (files[i] == file) next = i - 1;
+                                }
+
+                                if (next >= 0)
+                                {
+                                    fileCached = files[next];
+                                }
+
+                                imageCached = Image.FromFile(path + fileCached);
+                            }
+
+                            if (e.Delta < 0)
+                            {
+                                for (int i = 0; i < files.Count; i++)
+                                {
+                                    if (files[i] == file) next = i + 1;
+                                }
+
+                                if (next < files.Count)
+                                {
+                                    fileCached = files[next];
+                                }
+
+                                imageCached = Image.FromFile(path + fileCached);
+                            }
+                        } catch (Exception ex)
+                        {
+                            fileCached = "";
+                            imageCached = null;
                         }
                     } else 
                     {
@@ -521,6 +611,17 @@ namespace BcEasy
                     if (e.KeyCode == Keys.Escape)
                     {
                         form.Close();
+                        if (argument) this.Close();
+                        Cursor.Show();
+                    }
+                };
+
+                pictureBox.KeyDown += (sender, e) =>
+                {
+                    if (e.KeyCode == Keys.Escape)
+                    {
+                        form.Close();
+                        if (argument) this.Close();
                         Cursor.Show();
                     }
                 };
@@ -528,7 +629,9 @@ namespace BcEasy
                 form.Controls.Add(pictureBox);
                 form.WindowState = FormWindowState.Maximized;
                 form.FormBorderStyle = FormBorderStyle.None;
-                form.Show();
+                form.Show(this);
+                form.BringToFront();
+                form.Focus();
             } catch (Exception ex)
             {
                 pbPreview.Image = Resources.noimage;
